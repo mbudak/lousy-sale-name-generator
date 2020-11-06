@@ -1,65 +1,117 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import greatWords from "../words";
+import { Container, Heading, useToast, Box, Text } from "@chakra-ui/core";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 
-export default function Home() {
+function randomIntFromInterval(min, max) {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+export default function Home({ word }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [loading, setLoading] = useState(true);
+  const [wordInfo, setWordInfo] = useState();
+
+  const [selectedWord, setSelectedWord] = useState(
+    word || greatWords[randomIntFromInterval(0, greatWords.length - 1)]
+  );
+
+  const value = useMemo(() => {
+    return `${selectedWord?.value} ${new Date()
+      .toLocaleString("tr", {
+        month: "long",
+      })
+      .toLowerCase()} günleri`;
+  }, [selectedWord]);
+
+  const fetchWordInfo = (word) => {
+    fetch(`https://sozluk.gov.tr/gts?ara=${word}`)
+      .then((resp) => resp.json())
+      .then((data) => {
+        setWordInfo(data);
+      })
+      .catch((err) =>
+        toast({
+          title: "Böyle bir uygulamada bile hata çıkaran hayat",
+          description: "Normal zamanda kim bilir kime ne yapmaz?",
+          status: "error",
+          isClosable: true,
+        })
+      );
+  };
+
+  useEffect(() => {
+    if (router.query.w) {
+      const wordIndex = greatWords.findIndex(
+        (word) => word.value === router.query.w
+      );
+
+      if (wordIndex !== -1) {
+        setSelectedWord(greatWords[wordIndex]);
+        fetchWordInfo(greatWords[wordIndex].tdk);
+      } else {
+        const word =
+          greatWords[randomIntFromInterval(0, greatWords.length - 1)];
+        setSelectedWord(word);
+        fetchWordInfo(word?.tdk);
+        router.replace({ query: { w: word.value } });
+      }
+    } else {
+      router.replace({ query: { w: selectedWord?.value } });
+      fetchWordInfo(selectedWord?.tdk);
+    }
+
+    setLoading(false);
+  }, []);
+
   return (
-    <div className={styles.container}>
+    <div>
       <Head>
-        <title>Create Next App</title>
+        <title>{!loading ? value : "Dandik İndirim Günü Name Generator"}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
+      {!loading && (
+        <Container as="main" mt={24}>
+          <Heading
+            borderLeft="5px solid"
+            borderLeftColor="red.600"
+            fontWeight={400}
+            size="4xl"
+            lineHeight={1.4}
+            pl={12}
+            py={4}
           >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+            {value}
+          </Heading>
+          <Box mt={4}>
+            <Text fontSize="xl">{`${selectedWord.tdk}`}</Text>
+            {wordInfo?.[0].anlamlarListe?.map((meaning, i) => (
+              <Box
+                bg="gray.100"
+                mt={4}
+                w="full"
+                p={4}
+                key={i.toString()}
+                borderRadius="8px"
+              >
+                {meaning.anlam}
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      )}
     </div>
-  )
+  );
+}
+
+export async function getServerSideProps(context) {
+  return {
+    props: {
+      word: context.query.w || "",
+    },
+  };
 }
