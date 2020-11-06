@@ -72,6 +72,20 @@ export default function Home({ word }) {
       <Head>
         <title>{!loading ? value : "Dandik İndirim Günü Name Generator"}</title>
         <link rel="icon" href="/favicon.ico" />
+        <meta name="title" content={!loading ? value : "Dandik İndirim Günü Name Generator"}/>
+        <meta name="description" content="Dandik İndirim Günü isimleri generator. Dünyada bir numarayız."/>
+
+        <meta property="og:type" content="website"/>
+        <meta property="og:url" content="https://dandik-indirim.vercel.app/"/>
+        <meta property="og:title" content={!loading ? value : "Dandik İndirim Günü Name Generator"}/>
+        <meta property="og:description" content="Dandik İndirim Günü isimleri generator. Dünyada bir numarayız."/>
+        <meta property="og:image" content="/cover.jpg"/>
+
+        <meta property="twitter:card" content="summary_large_image"/>
+        <meta property="twitter:url" content="https://dandik-indirim.vercel.app/"/>
+        <meta property="twitter:title" content={!loading ? value : "Dandik İndirim Günü Name Generator"}/>
+        <meta property="twitter:description" content="Dandik İndirim Günü isimleri generator. Dünyada bir numarayız."/>
+        <meta property="twitter:image" content="/cover.jpg"/>
       </Head>
 
       {!loading && (
