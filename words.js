@@ -15,6 +15,10 @@ const words = [
   { tdk: "bağırtmak", value: "bağırtan" },
   { tdk: "ağlatmak", value: "ağlatan" },
   { tdk: "zayıflatmak", value: "zayıflatan" },
+  { tdk: "kutsal", value: "kutsal" },
+  { tdk: "kara", value: "kara" },
+  { tdk: "muhteşem", value: "muhtesem" },
+  { tdk: "bayram", value: "bayram" }
 ];
 
 export default words;
